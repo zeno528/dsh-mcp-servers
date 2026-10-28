@@ -761,7 +761,7 @@ window.__ModuleLoader__.load({
           { className: 'mcp-grid' },
           h(
             Field,
-            { label: t('serverName'), hint: t('serverNameHint') },
+            { label: t('serverName'), hint: disabled || server._saved === true ? undefined : t('serverNameHint') },
             h(TextInput, {
               value: server.serverName,
               disabled: disabled || server._saved === true,
@@ -958,6 +958,14 @@ window.__ModuleLoader__.load({
       const [selected, setSelected] = React.useState(0)
       const [drill, setDrill] = React.useState(false)
       const [notice, setNotice] = React.useState(null)
+      const noticeTimer = React.useRef(undefined)
+      /** Success feedback flashes once; errors stay until replaced. */
+      const showNotice = (next) => {
+        clearTimeout(noticeTimer.current)
+        setNotice(next)
+        if (next?.tone === 'success') noticeTimer.current = setTimeout(() => setNotice(null), 2500)
+      }
+      React.useEffect(() => () => clearTimeout(noticeTimer.current), [])
       const [busy, setBusy] = React.useState(undefined)
       const [keyDrafts, setKeyDrafts] = React.useState({})
       const [validation, setValidation] = React.useState(undefined)
@@ -1035,7 +1043,7 @@ window.__ModuleLoader__.load({
         if (!result.ok) {
           setValidation(result)
           setSelected(result.index)
-          setNotice({ tone: 'error', text: t(result.error) })
+          showNotice({ tone: 'error', text: t(result.error) })
           return
         }
         setValidation(undefined)
@@ -1049,10 +1057,10 @@ window.__ModuleLoader__.load({
         }
         setBusy(undefined)
         if (accepted) {
-          setNotice({ tone: 'success', text: t('saved') })
+          showNotice({ tone: 'success', text: t('saved') })
           void controller.refresh()
         } else {
-          setNotice({ tone: 'error', text: failure ?? t('saveFailed') })
+          showNotice({ tone: 'error', text: failure ?? t('saveFailed') })
         }
       }
 
@@ -1069,10 +1077,10 @@ window.__ModuleLoader__.load({
         setBusy(undefined)
         if (accepted) {
           setDraft(normalizeServers(config?.base?.servers ?? []))
-          setNotice({ tone: 'success', text: t('saved') })
+          showNotice({ tone: 'success', text: t('saved') })
           void controller.refresh()
         } else {
-          setNotice({ tone: 'error', text: t('saveFailed') })
+          showNotice({ tone: 'error', text: t('saveFailed') })
         }
       }
 
