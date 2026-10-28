@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Server rack with a plugged link: one hub reaching three MCP endpoints. -->
+  <rect x="6" y="12" width="22" height="40" rx="5" fill="#247bbf"/>
+  <rect x="12" y="19" width="10" height="4" rx="2" fill="#ffffff" opacity="0.85"/>
+  <rect x="12" y="28" width="10" height="4" rx="2" fill="#ffffff" opacity="0.6"/>
+  <rect x="12" y="37" width="10" height="4" rx="2" fill="#ffffff" opacity="0.4"/>
+  <path d="M28 32h9" fill="none" stroke="#247bbf" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="43" cy="16" r="6" fill="#247bbf"/>
+  <circle cx="49" cy="32" r="6" fill="#247bbf"/>
+  <circle cx="43" cy="48" r="6" fill="#247bbf"/>
+  <path d="M37 18l4 10M37 46l4-10" fill="none" stroke="#247bbf" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+</svg>

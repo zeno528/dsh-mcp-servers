@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "MCP Servers",
+    "description": "A dedicated sidebar page for MCP servers: add, edit, and remove connections and read their live state, credentials, and tool counts."
+  }
+}

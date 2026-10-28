@@ -1,0 +1,34 @@
+# MCP server management bundle.
+#
+# The Host half owns the only durable copy of this list: its Config carries
+# `servers`, the settings form writes that array into the profile patch, and the
+# Host derives one `@deepseek-ai/dsh-mcp-client` Loader entry per enabled server.
+# These rows are the bundle's inherited defaults, so "reset to default" in the
+# settings page restores exactly this list.
+- insert:
+    - id: mcp-servers
+      name: '@local/dsh-mcp-servers'
+      config:
+        servers:
+          - serverName: github
+            transport: stdio
+            command: /Users/zwf/.local/bin/github-mcp-server
+            args:
+              - stdio
+            credentialRef: GITHUB_PERSONAL_ACCESS_TOKEN
+            toolCallTimeoutMs: 120000
+          - serverName: tavily
+            transport: streamable-http
+            url: https://mcp.tavily.com/mcp/
+            credentialRef: TAVILY_API_KEY
+            toolCallTimeoutMs: 120000
+          - serverName: firecrawl
+            transport: streamable-http
+            url: https://mcp.firecrawl.dev/v2/mcp
+            credentialRef: FIRECRAWL_API_KEY
+            toolCallTimeoutMs: 120000
+          - serverName: exa
+            transport: streamable-http
+            url: https://mcp.exa.ai/mcp
+            credentialRef: EXA_API_KEY
+            toolCallTimeoutMs: 120000
