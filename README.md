@@ -6,6 +6,10 @@ server's live connection state and tool count. The page is a master–detail
 layout — a server list on the left, the selected server's edit form on the
 right.
 
+> **Note**: this is a third-party bundle for DSH (DeepSeek Harness). It depends
+> on the DSH runtime (`@deepseek-ai/*` packages, resolved from the host
+> installation at load time), which is not distributed through this repository.
+
 ## Files
 
 | File | Role |
