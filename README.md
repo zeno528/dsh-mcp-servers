@@ -1,5 +1,8 @@
 # @local/dsh-mcp-servers
 
+[![CI](https://github.com/zeno528/dsh-mcp-servers/actions/workflows/ci.yml/badge.svg)](https://github.com/zeno528/dsh-mcp-servers/actions/workflows/ci.yml)
+[![Secrets scan](https://github.com/zeno528/dsh-mcp-servers/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/zeno528/dsh-mcp-servers/actions/workflows/gitleaks.yml)
+
 MCP server management for DSH Web as a **top-level sidebar page** ("MCP"): add,
 edit, enable, and remove MCP servers, set their credentials, and read each
 server's live connection state and tool count. The page is a master–detail
