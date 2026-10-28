@@ -5,9 +5,9 @@
 
 [English](README.md) | 简体中文
 
-在 DSH Web 里以**顶层侧边栏页面**（"MCP"）管理 MCP 服务器：添加、编辑、启停、
+在 DSH Web 的**设置弹窗**里以"MCP"分区管理 MCP 服务器：添加、编辑、启停、
 删除 MCP 服务器，配置其凭据，并查看每台服务器的实时连接状态与工具数量。
-页面为主从布局——左侧服务器列表，右侧所选服务器的编辑表单。
+页面为服务器列表，点击进入所选服务器的编辑表单（返回键回到列表）。
 
 > **说明**：这是 DSH（DeepSeek Harness）的第三方 bundle。它依赖 DSH 运行时
 > （`@deepseek-ai/*` 包，加载时从宿主安装解析），这些包不随本仓库分发。
@@ -19,7 +19,7 @@
 | `package.json` | Bundle 清单（`dsh.bundle.patch`）与 Web 客户端声明（`dsh.client`）。 |
 | `cordis.patch.yml` | 插入唯一的 Host 行 `mcp-servers`，其 `config.servers` 即继承的默认列表（迁移自原工作区的四个服务器）。 |
 | `index.js` | 宿主侧：易变 `Config.servers`、Loader 协调、凭据解析，以及带鉴权的状态路由。 |
-| `client.js` | 浏览器侧：顶层页面（`sidebar.panellist` + `main` 插槽）与实时状态轮询。 |
+| `client.js` | 浏览器侧：设置弹窗页面（`settings.section` 插槽）与实时状态轮询。 |
 | `locale/en.json`、`locale/zh.json` | Bundle 展示元数据。 |
 | `icon.svg` | Bundle 原创图标。 |
 
@@ -44,14 +44,15 @@
 
 ## 页面入口
 
-浏览器侧注册两个插槽，不再注册 `plugins.item`：
+浏览器侧只注册一个插槽：
 
-- `sidebar.panellist` —— 侧边栏条目（`id: 'mcp'`），页面由此成为与 Plugins、
-  Schedules 并列的顶层面板。
-- `main` —— 页面本身（`key: 'mcp'`），选中该面板时渲染。
+- `settings.section` —— 设置弹窗条目（`id: 'mcp'`，`order: 16`），在弹窗左栏
+  显示为"MCP"。
 
 页面拥有自己的设置表单（`ctx.configForms.get('mcp-servers')`）并直接读写，
-不依赖 Plugins 页面。
+不依赖 Plugins 页面。表单底部工具条（保存／放弃修改／恢复默认与"已自定义"
+徽章）由宿主渲染；左栏图标也由宿主控制——设置分区无法自定义图标，显示为
+默认齿轮。
 
 ## 重置为默认
 

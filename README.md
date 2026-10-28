@@ -5,11 +5,10 @@
 
 English | [简体中文](README.zh-CN.md)
 
-MCP server management for DSH Web as a **top-level sidebar page** ("MCP"): add,
-edit, enable, and remove MCP servers, set their credentials, and read each
-server's live connection state and tool count. The page is a master–detail
-layout — a server list on the left, the selected server's edit form on the
-right.
+MCP server management for DSH Web as a **Settings-dialog section** ("MCP"):
+add, edit, enable, and remove MCP servers, set their credentials, and read each
+server's live connection state and tool count. The page is a server list that
+drills into the selected server's edit form.
 
 > **Note**: this is a third-party bundle for DSH (DeepSeek Harness). It depends
 > on the DSH runtime (`@deepseek-ai/*` packages, resolved from the host
@@ -22,7 +21,7 @@ right.
 | `package.json` | Bundle manifest (`dsh.bundle.patch`) plus the Web client declaration (`dsh.client`). |
 | `cordis.patch.yml` | Inserts the single Host row `mcp-servers`, whose `config.servers` is the inherited default list (the migrated four servers). |
 | `index.js` | Host half: volatile `Config.servers`, Loader reconciliation, credential resolution, and the authenticated status route. |
-| `client.js` | Browser half: the top-level page (`sidebar.panellist` + `main` slots) and the live-status poller. |
+| `client.js` | Browser half: the Settings-dialog page (`settings.section` slot) and the live-status poller. |
 | `locale/en.json`, `locale/zh.json` | Bundle display metadata. |
 | `icon.svg` | Original bundle artwork. |
 
@@ -52,14 +51,16 @@ right.
 
 ## Where the page lives
 
-The browser half registers two slots and no longer registers `plugins.item`:
+The browser half registers a single slot:
 
-- `sidebar.panellist` — the sidebar entry (`id: 'mcp'`), which is how the page
-  becomes a top-level panel next to Plugins and Schedules.
-- `main` — the page itself (`key: 'mcp'`), rendered when that panel is selected.
+- `settings.section` — the Settings-dialog entry (`id: 'mcp'`, `order: 16`),
+  rendered as "MCP" in the dialog's left nav.
 
 The page owns its settings form (`ctx.configForms.get('mcp-servers')`) and reads
-and writes it directly, so it does not depend on the Plugins page.
+and writes it directly, so it does not depend on the Plugins page. The form
+footer (save / discard / reset-to-default and the "customized" chip) is
+host-rendered chrome, and the nav icon is host-controlled — settings sections
+cannot customize it, so the entry shows the default gear.
 
 ## Resetting to defaults
 
