@@ -52,6 +52,7 @@ window.__ModuleLoader__.load({
       noServersHint: 'Add a server to make its tools available to the agent.',
       unnamed: 'unnamed',
       removeServer: 'Remove server',
+      removeConfirm: 'Confirm delete',
       serverName: 'Name',
       serverNameHint: 'Prefix of the tool names: mcp__<name>__<tool>.',
       transport: 'Transport',
@@ -129,6 +130,7 @@ window.__ModuleLoader__.load({
       noServersHint: '添加一个服务器，把它提供的工具交给 Agent 使用。',
       unnamed: '未命名',
       removeServer: '删除服务器',
+      removeConfirm: '确认删除',
       serverName: '名称',
       serverNameHint: '工具名前缀：mcp__<名称>__<工具>。',
       transport: '传输方式',
@@ -207,6 +209,7 @@ window.__ModuleLoader__.load({
       .mcp-button-ghost{border-color:transparent;background:transparent;color:var(--dsw-alias-label-secondary)}
       .mcp-button-ghost:hover:not(:disabled){background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary)}
       .mcp-button-danger{border-color:transparent;background:transparent;color:var(--dsw-alias-state-error-primary)}
+      .mcp-button-danger[data-armed=true],.mcp-button-danger[data-armed=true]:hover:not(:disabled){background:var(--dsw-alias-state-error-primary);color:#fff;white-space:nowrap}
       .mcp-button-danger:hover:not(:disabled){background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 10%,transparent)}
       .mcp-button-sm{height:28px;padding:0 10px;font-size:12px;line-height:18px}
       .mcp-notice{margin:0;padding:8px 10px;border-radius:var(--dsw-radius-md,8px);background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-secondary);font-size:12px;line-height:18px;overflow-wrap:anywhere}
@@ -214,6 +217,7 @@ window.__ModuleLoader__.load({
       .mcp-notice[data-tone=success]{color:var(--dsw-alias-state-success-primary);background:color-mix(in srgb,var(--dsw-alias-state-success-primary) 8%,transparent)}
       .mcp-panel{border:.5px solid var(--dsw-alias-border-l2);border-radius:var(--dsw-radius-lg,12px);background:var(--dsw-alias-bg-layer-1);padding:14px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
       .mcp-statusRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary);min-width:0}
+      .mcp-headToggle{display:flex;align-items:center;gap:6px}
       .mcp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
       .mcp-wide{grid-column:1 / -1}
       .mcp-field{display:flex;flex-direction:column;gap:4px;min-width:0}
@@ -688,6 +692,23 @@ window.__ModuleLoader__.load({
         return false
       }
 
+      /** Delete is destructive-looking; require a second click within 3 s. */
+      const [armed, setArmed] = React.useState(false)
+      React.useEffect(() => {
+        if (!armed) return undefined
+        const timer = setTimeout(() => setArmed(false), 3000)
+        return () => clearTimeout(timer)
+      }, [armed])
+
+      const metaParts = [
+        server.transport === 'stdio' ? t('transportStdioShort') : t('transportHttpShort'),
+        phaseLabel(t, phase),
+        status !== undefined && status.phase === 'active'
+          ? t('toolsCount', { count: String(status.toolCount ?? 0) })
+          : undefined,
+        credentialRequired && credentialConfigured ? t('credentialConfigured') : undefined,
+      ].filter(Boolean)
+
       return h(
         'div',
         { className: 'mcp-panel' },
@@ -696,15 +717,11 @@ window.__ModuleLoader__.load({
           { className: 'mcp-detailHead' },
           h('span', { className: 'mcp-dot', 'data-phase': phase }),
           h('h2', { className: 'mcp-detailTitle' }, server.serverName === '' ? t('unnamed') : server.serverName),
-          h('span', { className: 'mcp-chip' }, server.transport === 'stdio' ? t('transportStdioShort') : t('transportHttpShort')),
-          status !== undefined && status.phase === 'active'
-            ? h('span', { className: 'mcp-chip', 'data-tone': 'ok' }, t('toolsCount', { count: String(status.toolCount ?? 0) }))
-            : null,
           h('span', { className: 'mcp-spacer' }),
           h(
             'span',
-            { className: 'mcp-toggleRow', style: { minHeight: '28px', padding: '2px 8px' } },
-            h('span', { className: 'mcp-label', style: { color: 'inherit' } }, server.enabled !== false ? t('enabled') : t('phaseDisabled')),
+            { className: 'mcp-headToggle' },
+            h('span', { className: 'mcp-hint' }, server.enabled !== false ? t('enabled') : t('phaseDisabled')),
             h(Toggle, {
               checked: server.enabled !== false,
               label: t('enabled'),
@@ -717,43 +734,49 @@ window.__ModuleLoader__.load({
             {
               type: 'button',
               className: 'mcp-button mcp-button-danger mcp-button-sm',
+              'data-armed': armed ? 'true' : undefined,
               disabled,
-              title: t('removeServer'),
-              'aria-label': t('removeServer'),
-              onClick: onRemove,
-            },
-            h(
-              'svg',
-              {
-                width: 14,
-                height: 14,
-                viewBox: '0 0 24 24',
-                fill: 'none',
-                stroke: 'currentColor',
-                strokeWidth: 2,
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round',
-                'aria-hidden': true,
+              title: armed ? t('removeConfirm') : t('removeServer'),
+              'aria-label': armed ? t('removeConfirm') : t('removeServer'),
+              onClick: () => {
+                if (!armed) {
+                  setArmed(true)
+                  return
+                }
+                setArmed(false)
+                onRemove()
               },
-              h('path', { d: 'M3 6h18' }),
-              h('path', { d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6' }),
-              h('path', { d: 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' }),
-              h('path', { d: 'M10 11v6' }),
-              h('path', { d: 'M14 11v6' }),
-            ),
+            },
+            armed
+              ? t('removeConfirm')
+              : h(
+                  'svg',
+                  {
+                    width: 14,
+                    height: 14,
+                    viewBox: '0 0 24 24',
+                    fill: 'none',
+                    stroke: 'currentColor',
+                    strokeWidth: 2,
+                    strokeLinecap: 'round',
+                    strokeLinejoin: 'round',
+                    'aria-hidden': true,
+                  },
+                  h('path', { d: 'M3 6h18' }),
+                  h('path', { d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6' }),
+                  h('path', { d: 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' }),
+                  h('path', { d: 'M10 11v6' }),
+                  h('path', { d: 'M14 11v6' }),
+                ),
           ),
         ),
         h(
           'div',
           { className: 'mcp-statusRow' },
-          h('span', null, phaseLabel(t, phase)),
-          credentialRequired
-            ? h(
-                'span',
-                { className: 'mcp-chip', 'data-tone': credentialConfigured ? 'ok' : 'warn' },
-                credentialConfigured ? t('credentialConfigured') : t('credentialMissing'),
-              )
-            : h('span', { className: 'mcp-chip' }, t('credentialNotRequired')),
+          h('span', null, metaParts.join(' · ')),
+          credentialRequired && !credentialConfigured
+            ? h('span', { className: 'mcp-chip', 'data-tone': 'warn' }, t('credentialMissing'))
+            : null,
           status?.error === undefined ? null : h('span', { className: 'mcp-error' }, status.error),
         ),
         h(
@@ -1144,6 +1167,7 @@ window.__ModuleLoader__.load({
               h('p', { className: 'mcp-emptyHint' }, t('noServersHint')),
             )
           : h(ServerForm, {
+              key: activeIndex,
               t,
               server: activeServer,
               status: statusByServer.get(activeServer.serverName),
