@@ -4,6 +4,14 @@
   "private": true,
   "description": "MCP server management as a top-level sidebar page: add, edit, and remove MCP servers, with live connection state and tool counts",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zeno528/dsh-mcp-servers.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
