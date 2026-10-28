@@ -7,6 +7,9 @@ window.__ModuleLoader__.load({
     //#region constants
     /** Locale namespace owned by this page. */
     const NS = 'mcpServers'
+
+    /** Plugin version; keep in sync with package.json. */
+    const PLUGIN_VERSION = '0.1.0'
     /** Host entry id: the settings namespace this page edits. */
     const ENTRY_ID = 'mcp-servers'
     /** Sidebar panel id and `main` slot key of the top-level MCP page. */
@@ -183,23 +186,6 @@ window.__ModuleLoader__.load({
     //#region styles
     const STYLES = `
       .mcp-page{display:flex;flex-direction:column;width:100%;min-width:0;height:100%;min-height:0;overflow:hidden;color:var(--dsw-alias-label-primary);font-size:13px;line-height:20px}
-      .mcp-head{flex:none;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:28px clamp(24px,4vw,48px) 0}
-      [data-platform=darwin] .mcp-head{padding-top:calc(28px + var(--dsh-frame-top-clearance,0px))}
-      .mcp-headMain{min-width:0;display:flex;flex-direction:column;gap:4px}
-      .mcp-title{margin:0;font-size:20px;font-weight:500;line-height:28px}
-      .mcp-subtitle{margin:0;color:var(--dsw-alias-label-secondary);font-size:13px;line-height:20px}
-      .mcp-headStats{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-      .mcp-body{flex:1;min-height:0;display:flex}
-      .mcp-list{flex:none;width:268px;min-height:0;display:flex;flex-direction:column;border-right:.5px solid var(--dsw-alias-border-l2)}
-      .mcp-listHead{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 12px 8px}
-      .mcp-listItems{flex:1;min-height:0;overflow:auto;list-style:none;margin:0;padding:0 8px 24px;display:flex;flex-direction:column;gap:2px}
-      .mcp-listItem{box-sizing:border-box;width:100%;display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;padding:8px 10px;border:0;border-radius:var(--dsw-radius-md,8px);background:transparent;color:inherit;font:inherit;cursor:pointer}
-      .mcp-listItem:hover{background:var(--dsw-alias-interactive-bg-hover)}
-      .mcp-listItem:focus-visible{outline:var(--dsw-focus-ring-width,2px) solid var(--dsw-focus-ring-color,var(--dsw-alias-brand-primary));outline-offset:-1px}
-      .mcp-listItem[data-active=true]{background:var(--dsw-alias-bg-layer-2)}
-      .mcp-listItemHead{display:flex;align-items:center;gap:6px;min-width:0;width:100%}
-      .mcp-listItemName{font-size:13px;font-weight:500;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-      .mcp-listItemMeta{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
       .mcp-detail{flex:1;min-width:0;overflow:auto;padding:20px clamp(24px,4vw,48px) 48px;display:flex;flex-direction:column;gap:16px}
       .mcp-detailHead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
       .mcp-detailTitle{font-size:16px;font-weight:500;line-height:24px;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
@@ -269,6 +255,7 @@ window.__ModuleLoader__.load({
       .mcp-advancedTitle{margin:0;color:var(--dsw-alias-label-secondary);font-size:12px;line-height:17px}
       .mcp-compactHead{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 20px 0}
       .mcp-compactTitle{margin:0;font-size:15px;font-weight:500;line-height:22px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .mcp-version{color:var(--dsw-alias-label-tertiary,var(--dsw-alias-label-secondary));font-size:11px;line-height:22px;font-weight:400;white-space:nowrap}
       .mcp-compactBody{flex:1;min-height:0;overflow:auto;padding:12px 20px 16px;display:flex;flex-direction:column;gap:10px}
       .mcp-table{border:.5px solid var(--dsw-alias-border-l2);border-radius:var(--dsw-radius-lg,12px);background:var(--dsw-alias-bg-layer-1);overflow:hidden;display:flex;flex-direction:column}
       .mcp-tableRow{box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:4px 14px;border:0;border-bottom:.5px solid var(--dsw-alias-border-l2);background:transparent;color:inherit;font:inherit;font-size:13px;line-height:20px;text-align:left;cursor:pointer}
@@ -280,7 +267,7 @@ window.__ModuleLoader__.load({
       .mcp-tableEdit{color:var(--dsw-alias-label-secondary);font-size:12px;line-height:17px;flex:none}
       .mcp-page[data-compact=true] .mcp-detail{padding:12px 20px 20px}
       .mcp-page[data-compact=true] .mcp-foot{padding:10px 20px}
-      @media (max-width:820px){.mcp-body{flex-direction:column}.mcp-list{width:100%;border-right:0;border-bottom:.5px solid var(--dsw-alias-border-l2);max-height:40%}.mcp-grid{grid-template-columns:minmax(0,1fr)}}
+      @media (max-width:820px){.mcp-grid{grid-template-columns:minmax(0,1fr)}}
     `
     /** Attach this page's stylesheet once; returns its remover. */
     function attachStyles() {
@@ -336,7 +323,7 @@ window.__ModuleLoader__.load({
       const used = new Set(rows.map((row) => row.serverName))
       let index = rows.length + 1
       while (used.has(`server${index}`)) index += 1
-      return normalizeServer({ serverName: `server${index}`, transport: 'streamable-http' })
+      return { ...normalizeServer({ serverName: `server${index}`, transport: 'streamable-http' }), _saved: false }
     }
 
     /** The page's own validation, mirroring the Host's derivation rules. */
@@ -677,70 +664,9 @@ window.__ModuleLoader__.load({
       )
     }
 
-    /** The sidebar glyph for the MCP page. */
-    /** The sidebar glyph: the official Model Context Protocol mark, themed via currentColor. */
-    function McpPanelIcon(props) {
-      const size = typeof props.size === 'number' ? props.size : 18
-      return h(
-        'svg',
-        {
-          width: size,
-          height: size,
-          viewBox: '0 0 24 24',
-          fill: 'currentColor',
-          fillRule: 'evenodd',
-          'aria-hidden': 'true',
-        },
-        h('path', {
-          d: 'M15.688 2.343a2.588 2.588 0 00-3.61 0l-9.626 9.44a.863.863 0 01-1.203 0 .823.823 0 010-1.18l9.626-9.44a4.313 4.313 0 016.016 0 4.116 4.116 0 011.204 3.54 4.3 4.3 0 013.609 1.18l.05.05a4.115 4.115 0 010 5.9l-8.706 8.537a.274.274 0 000 .393l1.788 1.754a.823.823 0 010 1.18.863.863 0 01-1.203 0l-1.788-1.753a1.92 1.92 0 010-2.754l8.706-8.538a2.47 2.47 0 000-3.54l-.05-.049a2.588 2.588 0 00-3.607-.003l-7.172 7.034-.002.002-.098.097a.863.863 0 01-1.204 0 .823.823 0 010-1.18l7.273-7.133a2.47 2.47 0 00-.003-3.537z',
-        }),
-        h('path', {
-          d: 'M14.485 4.703a.823.823 0 000-1.18.863.863 0 00-1.204 0l-7.119 6.982a4.115 4.115 0 000 5.9 4.314 4.314 0 006.016 0l7.12-6.982a.823.823 0 000-1.18.863.863 0 00-1.204 0l-7.119 6.982a2.588 2.588 0 01-3.61 0 2.47 2.47 0 010-3.54l7.12-6.982z',
-        }),
-      )
-    }
     //#endregion
 
     //#region page
-    /** One server row in the list pane. */
-    function ServerRow(props) {
-      const { t, server, active, status, onSelect, phase, saved } = props
-      const rowPhase = phase ?? serverPhase(server, status)
-      const savedEnabled = saved === undefined ? server.enabled !== false : saved.enabled !== false
-      return h(
-        'li',
-        null,
-        h(
-          'button',
-          {
-            type: 'button',
-            className: 'mcp-listItem',
-            'data-active': active === true ? 'true' : 'false',
-            'aria-current': active === true ? 'true' : undefined,
-            onClick: onSelect,
-          },
-          h(
-            'span',
-            { className: 'mcp-listItemHead' },
-            h('span', { className: 'mcp-dot', 'data-phase': rowPhase }),
-            h('span', { className: 'mcp-listItemName' }, server.serverName === '' ? t('unnamed') : server.serverName),
-          ),
-          h(
-            'span',
-            { className: 'mcp-listItemMeta' },
-            h('span', { className: 'mcp-chip' }, server.transport === 'stdio' ? t('transportStdioShort') : t('transportHttpShort')),
-            status !== undefined && typeof status.version === 'string'
-              ? h('span', { className: 'mcp-chip' }, `v${status.version}`)
-              : null,
-            status !== undefined && status.phase === 'active'
-              ? h('span', { className: 'mcp-chip' }, t('toolsCount', { count: String(status.toolCount ?? 0) }))
-              : null,
-            savedEnabled === false ? h('span', { className: 'mcp-chip', 'data-tone': 'warn' }, t('phaseDisabled')) : null,
-          ),
-        ),
-      )
-    }
-
     /** The edit form for the selected server. */
     function ServerForm(props) {
       const { t, server, status, disabled, live, keyDraft, onChange, onRemove, onKeyDraft, onSetKey, phase: livePhase } = props
@@ -838,7 +764,7 @@ window.__ModuleLoader__.load({
             { label: t('serverName'), hint: t('serverNameHint') },
             h(TextInput, {
               value: server.serverName,
-              disabled,
+              disabled: disabled || server._saved === true,
               invalid: invalidField('serverName'),
               'aria-label': t('serverName'),
               spellCheck: false,
@@ -1022,7 +948,7 @@ window.__ModuleLoader__.load({
       const controller = props.mcpController
 
       const acceptedServers = React.useMemo(
-        () => normalizeServers(config?.value?.servers ?? config?.base?.servers ?? []),
+        () => normalizeServers(config?.value?.servers ?? config?.base?.servers ?? []).map((server) => ({ ...server, _saved: true })),
         [config?.value, config?.base],
       )
       const acceptedJson = JSON.stringify(acceptedServers)
@@ -1030,7 +956,6 @@ window.__ModuleLoader__.load({
       const [draft, setDraft] = React.useState(acceptedServers)
       const [baseline, setBaseline] = React.useState(acceptedJson)
       const [selected, setSelected] = React.useState(0)
-      const compact = props.compact === true
       const [drill, setDrill] = React.useState(false)
       const [notice, setNotice] = React.useState(null)
       const [busy, setBusy] = React.useState(undefined)
@@ -1084,7 +1009,7 @@ window.__ModuleLoader__.load({
         setValidation(undefined)
         setDraft((rows) => rows.filter((_, position) => position !== activeIndex))
         setSelected((current) => Math.max(0, Math.min(current, draft.length - 2)))
-        if (compact) setDrill(false)
+        setDrill(false)
       }
 
       /** Append one empty server row to the draft and select it. */
@@ -1118,7 +1043,7 @@ window.__ModuleLoader__.load({
         let accepted = false
         let failure
         try {
-          accepted = await controller.form.mutate([{ op: 'set', path: ['servers'], value: draft }], config?.revision)
+          accepted = await controller.form.mutate([{ op: 'set', path: ['servers'], value: draft.map(({ _saved: _ignored, ...rest }) => rest) }], config?.revision)
         } catch (error) {
           failure = String(error?.message ?? error)
         }
@@ -1250,9 +1175,8 @@ window.__ModuleLoader__.load({
         ),
       )
 
-      /** Settings-dialog layout: a compact table first, the full editor as a second level. */
-      if (compact) {
-        return h(
+      /** The page: a compact table first, the full editor as a second level. */
+      return h(
           'div',
           { className: 'mcp-page', 'data-compact': 'true' },
           drill
@@ -1270,6 +1194,7 @@ window.__ModuleLoader__.load({
                 'div',
                 { className: 'mcp-compactHead' },
                 h('h1', { className: 'mcp-compactTitle' }, t('title')),
+                h('span', { className: 'mcp-version' }, `v${PLUGIN_VERSION}`),
                 statistics.map((text, index) => h('span', { key: `stat-${index}`, className: 'mcp-chip' }, text)),
                 h('span', { className: 'mcp-spacer' }),
                 h(Button, { size: 'sm', variant: 'ghost', onClick: () => void controller?.refresh() }, t('refresh')),
@@ -1324,66 +1249,6 @@ window.__ModuleLoader__.load({
                       }),
                     ),
               ),
-          footEl,
-        )
-      }
-
-      return h(
-        'div',
-        { className: 'mcp-page' },
-        h(
-          'div',
-          { className: 'mcp-head' },
-          h(
-            'div',
-            { className: 'mcp-headMain' },
-            h('h1', { className: 'mcp-title' }, t('title')),
-            h('p', { className: 'mcp-subtitle' }, t('description')),
-          ),
-          h(
-            'div',
-            { className: 'mcp-headStats' },
-            statistics.map((text, index) => h('span', { key: `stat-${index}`, className: 'mcp-chip' }, text)),
-            h(
-              Button,
-              { size: 'sm', variant: 'ghost', onClick: () => void controller?.refresh() },
-              t('refresh'),
-            ),
-          ),
-        ),
-        h(
-          'div',
-          { className: 'mcp-body' },
-          h(
-            'aside',
-            { className: 'mcp-list' },
-            h(
-              'div',
-              { className: 'mcp-listHead' },
-              h('span', { className: 'mcp-label' }, t('serverCount', { count: String(draft.length) })),
-              h(Button, { size: 'sm', disabled: !editable, onClick: addServer }, t('addServer')),
-            ),
-            draft.length === 0
-              ? h('div', { className: 'mcp-notice', style: { margin: '0 8px' } }, t('noServers'))
-              : h(
-                  'ul',
-                  { className: 'mcp-listItems' },
-                  draft.map((server, index) =>
-                    h(ServerRow, {
-                      key: `server-${index}`,
-                      t,
-                      server,
-                      active: index === activeIndex,
-                      status: statusByServer.get(server.serverName),
-                      phase: savedPhase(server),
-                      saved: savedServer(server),
-                      onSelect: () => setSelected(index),
-                    }),
-                  ),
-                ),
-          ),
-          detailEl,
-        ),
         footEl,
       )
     }
@@ -1404,32 +1269,6 @@ window.__ModuleLoader__.load({
             controller.start()
 
             const disposers = [
-              ctx.slots.inject('sidebar.panellist', () =>
-                ctx.slots.register(
-                  {
-                    name: 'sidebar.panellist',
-                    id: PANEL_ID,
-                    order: 20,
-                    locale: NS,
-                    label: () => t('panel'),
-                  },
-                  McpPanelIcon,
-                ),
-              ),
-              ctx.slots.inject('main', () =>
-                ctx.slots.register(
-                  {
-                    name: 'main',
-                    key: PANEL_ID,
-                    locale: NS,
-                    inject: () => ({
-                      hooks: { mcpLive: controller.live, mcpConfig: controller.config },
-                      mcpController: controller,
-                    }),
-                  },
-                  McpServersPage,
-                ),
-              ),
               ctx.slots.inject('settings.section', () =>
                 ctx.slots.register(
                   {
@@ -1441,7 +1280,6 @@ window.__ModuleLoader__.load({
                     inject: () => ({
                       hooks: { mcpLive: controller.live, mcpConfig: controller.config },
                       mcpController: controller,
-                      compact: true,
                     }),
                   },
                   McpServersPage,
